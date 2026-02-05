@@ -16,7 +16,15 @@ router = APIRouter(
 )
 
 
-@router.get("/{building_id}/organizations/")
+@router.get(
+    "/{building_id}/organizations/",
+    summary="Get organizations located in a building",
+    description=(
+        "Returns the list of organizations associated with the specified building.\n\n"
+        "Useful for displaying tenants, companies, offices, or residents registered at a particular building."
+    ),
+    response_description="List of organizations in API response format",
+)
 @inject
 async def get_org_detail(
     building_id: int,

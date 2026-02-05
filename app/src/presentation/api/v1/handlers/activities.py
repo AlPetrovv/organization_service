@@ -15,7 +15,14 @@ router = APIRouter(
 )
 
 
-@router.get("/{activity_id}/organizations/")
+@router.get(
+    "/{activity_id}/organizations/",
+    summary="Get organizations associated with an activity",
+    description=(
+        "Returns the list of organizations linked to the specified activity.\n\n"
+        "Useful for displaying partners, organizers, sponsors, or co-hosts of a particular activity."
+    ),
+)
 @inject
 async def get_activity_organizations(
     activity_id: int,

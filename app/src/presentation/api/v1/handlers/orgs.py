@@ -24,7 +24,15 @@ router = APIRouter(
 )
 
 
-@router.get("/{org_id:uuid}")
+@router.get(
+    "/{org_id:uuid}",
+    summary="Get organization by ID",
+    description=(
+        "Retrieves detailed information about a single organization using its unique UUID.\n\n"
+        "Returns extended details including full profile, contacts, addresses, and other metadata."
+    ),
+    response_description="Detailed organization information",
+)
 @inject
 async def get_org(
     org_id: UUID,
@@ -38,7 +46,12 @@ async def get_org(
         return response
 
 
-@router.get("/name/{org_name}")
+@router.get(
+    "/name/{org_name}",
+    summary="Get organization by name",
+    description="Finds and returns detailed information about an organization using its name.\n\n",
+    response_description="Detailed organization information",
+)
 @inject
 async def get_org_by_name(
     org_name: str,
@@ -52,7 +65,15 @@ async def get_org_by_name(
         return response
 
 
-@router.get("/search/radius")
+@router.get(
+    "/search/radius",
+    summary="Find organizations within a geographic radius",
+    description=(
+        "Returns a list of organizations located within the specified radius (in meters or kilometers, "
+        "depending on interactor implementation) from the given latitude/longitude coordinates.\n\n"
+    ),
+    response_description="List of organizations within the search radius",
+)
 @inject
 async def get_orgs_in_radius(
     search_data: RadiusSearch = Query(...),

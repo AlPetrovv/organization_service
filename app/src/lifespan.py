@@ -7,13 +7,11 @@ __all__ = ("lifespan",)
 
 from config import settings
 
-from routers import api_router
-from test_data import create_test_data
-
 
 @contextlib.asynccontextmanager
 async def lifespan(app: "FastAPI"):
     from ioc import Container
+    from test_data import create_test_data
 
     container = Container()
     container.config.from_pydantic(settings)
@@ -28,6 +26,5 @@ async def lifespan(app: "FastAPI"):
     await create_test_data(ouw)
 
     app.container = container
-    app.include_router(api_router)
 
     yield

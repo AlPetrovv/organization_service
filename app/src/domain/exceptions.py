@@ -1,6 +1,10 @@
 from application.interfaces.exception import ExceptionProtocol
 
 
+class ModelFoundError(ExceptionProtocol):
+    base_msg = "not found"
+
+
 class OrganizationError(ExceptionProtocol):
     base_msg = "OrganizationError"
 
@@ -13,13 +17,13 @@ class ActivityError(ExceptionProtocol):
     base_msg = "ActivityError"
 
 
-class OrganizationNotFoundError(OrganizationError):
+class OrganizationNotFoundError(ModelFoundError):
     base_msg = "Organization not found"
 
 
-class BuildingNotFoundError(BuildingError):
+class BuildingNotFoundError(ModelFoundError):
     base_msg = "Building not found"
 
 
-class ActivityNotFoundError(ActivityError):
+class ActivityNotFoundError(ModelFoundError):
     base_msg = "Activity not found"

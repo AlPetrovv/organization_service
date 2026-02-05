@@ -81,7 +81,7 @@ class DBOrganizationRepo(DBRepoProtocol):
     async def get_by_building_id(self, building_id: int) -> list["OrganizationEntity"]:
         stmt = select(self.model).where(self.model.building_id == building_id)
         result = await self.session.scalars(stmt)
-        orgs = result.unique().all()
+        orgs = result.all()
         return [self.mapper.to_entity(org) for org in orgs]
 
     async def get_by_name(self, org_name: str) -> Optional["OrganizationEntity"]:
@@ -115,5 +115,5 @@ class DBOrganizationRepo(DBRepoProtocol):
         activity_alias = aliased(Activity, activity_tree)
         stmt = select(self.model).join(self.model.activities.of_type(activity_alias)).distinct()
         result = await self.session.scalars(stmt)
-        orgs = result.unique().all()
+        orgs = result.all()
         return [self.mapper.to_entity(org) for org in orgs]

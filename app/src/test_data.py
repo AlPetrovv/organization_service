@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import phonenumbers
 from dependency_injector.wiring import inject, Provide
 from geoalchemy2.elements import WKTElement
@@ -10,9 +12,12 @@ from application.dto.orgs import OrganizationDTO, OrganizationPhoneDTO
 
 from ioc import Container
 
+if TYPE_CHECKING:
+    from infra.resouces.database.repos import UOW
+
 
 @inject
-async def create_test_data(ouw=Provide[Container.db.uow]):
+async def create_test_data(ouw: "UOW" = Provide[Container.db.uow]):
     """Create test data. convert into migration or tests later"""
     async with ouw:
         try:

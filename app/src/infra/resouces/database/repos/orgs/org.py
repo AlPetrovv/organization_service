@@ -8,6 +8,7 @@ from sqlalchemy import select, exists, cast, CTE
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload, aliased
 
+from domain.exceptions import OrganizationNotFoundError
 from infra.resouces.database.mappers.orgs import DBOrganizationMapper
 from infra.resouces.database.models import Organization, Building, Activity
 
@@ -84,11 +85,11 @@ class DBOrganizationRepo(DBRepoProtocol):
         orgs = result.all()
         return [self.mapper.to_entity(org) for org in orgs]
 
-    async def get_by_name(self, org_name: str) -> Optional["OrganizationEntity"]:
+    async def get_by_name(self, org_name: str) -> "OrganizationEntity":
         stmt = select(self.model).where(self.model.name == org_name)
         org = await self.session.scalar(stmt)
         if org is None:
-            raise ValueError("Organization not found")
+            raise OrganizationNotFoundError(org_name)
         return self.mapper.to_entity(org=org)
 
     async def get_organizations_in_radius(self, lon: float, lat: float, radius: int) -> list["OrganizationEntity"]:

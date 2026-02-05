@@ -18,13 +18,13 @@ class CheckOrganizationExistsInteractor:
 
 class GetOrganizationInteractor:
     async def __call__(self, org_id: UUID, uow: "UOW") -> OrganizationEntity:
-        org = await uow.organizations.get_by_id(org_id)
+        org = await uow.organizations.get_by_id_with_relations(org_id)
         return org
 
 
 class GetOrganizationByNameInteractor:
     async def __call__(self, org_name: str, uow: "UOW") -> OrganizationEntity:
-        entity = await uow.organizations.get_by_name(org_name)
+        entity = await uow.organizations.get_by_name_with_relations(org_name)
         return entity
 
 

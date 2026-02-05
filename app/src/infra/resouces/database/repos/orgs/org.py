@@ -6,7 +6,7 @@ from geoalchemy2 import Geography
 from geoalchemy2.functions import ST_DWithin, ST_SetSRID, ST_MakePoint
 from sqlalchemy import select, exists, cast, CTE
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import joinedload, aliased
+from sqlalchemy.orm import joinedload, aliased, selectinload
 
 from domain.exceptions import OrganizationNotFoundError
 from infra.resouces.database.mappers.orgs import DBOrganizationMapper
@@ -28,11 +28,22 @@ class DBOrganizationRepo(DBRepoProtocol):
         result = await self.session.scalar(stmt)
         return result is True
 
-    async def get_by_id(self, org_id: UUID) -> Optional["OrganizationEntity"]:
+    async def get_by_id(self, org_id: UUID) -> "OrganizationEntity":
         stmt = select(self.model).where(self.model.id == org_id)
         org = await self.session.scalar(stmt)
         if org is None:
-            return None
+            raise OrganizationNotFoundError
+        return self.mapper.to_entity(org=org)
+
+    async def get_by_id_with_relations(self, org_id: UUID):
+        stmt = (
+            select(self.model)
+            .where(self.model.id == org_id)
+            .options(selectinload(Organization.building), selectinload(Organization.activities))
+        )
+        org = await self.session.scalar(stmt)
+        if org is None:
+            raise OrganizationNotFoundError
         return self.mapper.to_entity(org=org)
 
     async def get_by_ids(self, ids: Sequence[int]) -> Optional[Sequence["OrganizationEntity"]]:
@@ -85,11 +96,15 @@ class DBOrganizationRepo(DBRepoProtocol):
         orgs = result.all()
         return [self.mapper.to_entity(org) for org in orgs]
 
-    async def get_by_name(self, org_name: str) -> "OrganizationEntity":
-        stmt = select(self.model).where(self.model.name == org_name)
+    async def get_by_name_with_relations(self, org_name: str) -> "OrganizationEntity":
+        stmt = (
+            select(self.model)
+            .where(self.model.name == org_name)
+            .options(selectinload(Organization.building), selectinload(Organization.activities))
+        )
         org = await self.session.scalar(stmt)
         if org is None:
-            raise OrganizationNotFoundError(org_name)
+            raise OrganizationNotFoundError
         return self.mapper.to_entity(org=org)
 
     async def get_organizations_in_radius(self, lon: float, lat: float, radius: int) -> list["OrganizationEntity"]:

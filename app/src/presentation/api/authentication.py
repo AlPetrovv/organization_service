@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status, Security
+from fastapi import HTTPException, status, Security, Depends
 from fastapi.security import APIKeyHeader
 
 from config import Settings
@@ -26,3 +26,6 @@ async def get_api_key(api_key: str = Security(api_key_header)):
         )
 
     return api_key
+
+
+auth_api_key_dep = Depends(get_api_key)

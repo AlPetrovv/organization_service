@@ -3,6 +3,7 @@ from fastapi.responses import ORJSONResponse
 
 
 from lifespan import lifespan
+from presentation.api.authentication import auth_api_key_dep
 
 
 def create_app():
@@ -11,6 +12,7 @@ def create_app():
         description="Welcome to the Organization service API",
         lifespan=lifespan,
         default_response_class=ORJSONResponse,
+        dependencies=[auth_api_key_dep],
     )
     return app
 

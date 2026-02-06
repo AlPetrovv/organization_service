@@ -28,7 +28,7 @@ class Organization(UUIDPKMixin, CreatedAtMixin, Base):
         lazy="selectin",
     )
     building_id: Mapped[int] = mapped_column(ForeignKey("building.id", ondelete="CASCADE"))
-    building: Mapped["Building"] = relationship("Building", back_populates="organizations", lazy="selectin")
+    building: Mapped["Building"] = relationship("Building", back_populates="organizations", lazy="joined")
 
 
 class OrganizationPhoneNumber(IDPKBIGINTMixin, CreatedAtMixin, Base):

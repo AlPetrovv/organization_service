@@ -39,7 +39,11 @@ class DBOrganizationRepo(DBRepoProtocol):
         stmt = (
             select(self.model)
             .where(self.model.id == org_id)
-            .options(selectinload(Organization.building), selectinload(Organization.activities))
+            .options(
+                joinedload(Organization.building),
+                selectinload(Organization.activities),
+                selectinload(Organization.phones),
+            )
         )
         org = await self.session.scalar(stmt)
         if org is None:
@@ -93,14 +97,18 @@ class DBOrganizationRepo(DBRepoProtocol):
     async def get_by_building_id(self, building_id: int) -> list["OrganizationEntity"]:
         stmt = select(self.model).where(self.model.building_id == building_id)
         result = await self.session.scalars(stmt)
-        orgs = result.all()
+        orgs = result.unique().all()
         return [self.mapper.to_entity(org) for org in orgs]
 
     async def get_by_name_with_relations(self, org_name: str) -> "OrganizationEntity":
         stmt = (
             select(self.model)
             .where(self.model.name == org_name)
-            .options(selectinload(Organization.building), selectinload(Organization.activities))
+            .options(
+                joinedload(Organization.building),
+                selectinload(Organization.activities),
+                selectinload(Organization.phones),
+            )
         )
         org = await self.session.scalar(stmt)
         if org is None:
@@ -131,5 +139,5 @@ class DBOrganizationRepo(DBRepoProtocol):
         activity_alias = aliased(Activity, activity_tree)
         stmt = select(self.model).join(self.model.activities.of_type(activity_alias)).distinct()
         result = await self.session.scalars(stmt)
-        orgs = result.all()
+        orgs = result.unique().all()
         return [self.mapper.to_entity(org) for org in orgs]

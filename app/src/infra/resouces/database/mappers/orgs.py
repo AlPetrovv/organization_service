@@ -43,17 +43,27 @@ class DBOrganizationMapper(DBMapperProtocol):
         build_entity = self.building_mapper.to_entity(org.building)
 
         phones = [self.phone_mapper.to_entity(phone) for phone in org.phones]
+        activities = [self.activity_mapper.to_entity(activity) for activity in org.activities]
         return OrganizationEntity(
             id=org.id,
             name=org.name,
             created_at=org.created_at,
             phones=phones,
             building=build_entity,
+            activities=activities,
         )
 
     def to_model(self, entity: OrganizationEntity) -> Organization:
         building = self.building_mapper.to_model(entity.building)
-        return Organization(id=entity.id, created_at=entity.created_at, building=building)
+        activities = [self.activity_mapper.to_model(activity) for activity in entity.activities]
+        phones = [self.phone_mapper.to_model(phone) for phone in entity.phones]
+        return Organization(
+            id=entity.id,
+            created_at=entity.created_at,
+            building=building,
+            activities=activities,
+            phones=phones,
+        )
 
     def to_model_from_dto(self, dto: "OrganizationDTO"):
         phones = [self.phone_mapper.to_model_from_dto(phone) for phone in dto.phones]

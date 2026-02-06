@@ -9,13 +9,19 @@ from application.interactors.orgs import (
     GetOrganizationInteractor,
     GetOrganizationByNameInteractor,
     GetOrganizationsInRadiusInteractor,
+    GetOrganizationsInSquareInteractor,
 )
 from infra.resouces.database.repos import UOW
 
 from ioc import Container
 
 from presentation.api.v1.mappers.orgs import OrganizationApiMapper
-from presentation.api.v1.schemas.orgs import OrganizationResponse, OrganizationResponseDetail, RadiusSearch
+from presentation.api.v1.schemas.orgs import (
+    OrganizationResponse,
+    OrganizationResponseDetail,
+    RadiusSearch,
+    SquareSearch,
+)
 
 router = APIRouter(
     prefix="/organization",
@@ -68,10 +74,7 @@ async def get_org_by_name(
 @router.get(
     "/search/radius",
     summary="Find organizations within a geographic radius",
-    description=(
-        "Returns a list of organizations located within the specified radius (in meters or kilometers, "
-        "depending on interactor implementation) from the given latitude/longitude coordinates.\n\n"
-    ),
+    description="Returns a list of organizations located within the specified radius (in meters)",
     response_description="List of organizations within the search radius",
 )
 @inject
@@ -89,4 +92,23 @@ async def get_orgs_in_radius(
             uow=uow,
         )
         response = [mapper.to_response(organization_entity) for organization_entity in organization_entities]
+        return response
+
+
+@router.get(
+    "/search/square",
+    summary="Find organizations within a bounding box",
+    description="Returns a list of organizations located within the specified bounding box ",
+    response_description="List of organizations within the bounding box",
+)
+@inject
+async def get_orgs_in_square(
+    search_data: SquareSearch = Query(...),
+    interactor: GetOrganizationsInSquareInteractor = Depends(Provide[Container.interactors.orgs.get_in_square]),
+    mapper: OrganizationApiMapper = Depends(Provide[Container.mappers.api_mappers.org_mapper]),
+    uow: UOW = Depends(Provide[Container.db.uow]),
+) -> list[OrganizationResponse]:
+    async with uow:
+        orgs = await interactor(side=search_data.distance, lat=search_data.lat, lon=search_data.lon, uow=uow)
+        response = [mapper.to_response(org) for org in orgs]
         return response

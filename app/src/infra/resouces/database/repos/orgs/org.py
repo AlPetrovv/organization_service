@@ -3,8 +3,8 @@ from uuid import UUID
 
 
 from geoalchemy2 import Geography
-from geoalchemy2.functions import ST_DWithin, ST_SetSRID, ST_MakePoint
-from sqlalchemy import select, exists, cast, CTE
+from geoalchemy2.functions import ST_DWithin, ST_SetSRID, ST_MakePoint, ST_MakeEnvelope, ST_Intersects
+from sqlalchemy import select, exists, cast, CTE, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload, aliased, selectinload
 
@@ -105,9 +105,9 @@ class DBOrganizationRepo(DBRepoProtocol):
             select(self.model)
             .where(self.model.name == org_name)
             .options(
-                joinedload(Organization.building),
-                selectinload(Organization.activities),
-                selectinload(Organization.phones),
+                joinedload(self.model.building),
+                selectinload(self.model.activities),
+                selectinload(self.model.phones),
             )
         )
         org = await self.session.scalar(stmt)
@@ -129,8 +129,20 @@ class DBOrganizationRepo(DBRepoProtocol):
                     radius,
                 )
             )
-            .options(joinedload(Organization.building))
+            .options(joinedload(self.model.building))
         )
+        result = await self.session.scalars(stmt)
+        orgs = result.unique().all()
+        return [self.mapper.to_entity(org) for org in orgs]
+
+    async def get_organizations_in_square(self, envelope: ST_MakeEnvelope) -> list["OrganizationEntity"]:
+        stmt = (
+            select(self.model)
+            .join(self.model.building)
+            .where(func.ST_Intersects(Building.location, envelope))
+            .options(joinedload(self.model.building))
+        )
+
         result = await self.session.scalars(stmt)
         orgs = result.unique().all()
         return [self.mapper.to_entity(org) for org in orgs]

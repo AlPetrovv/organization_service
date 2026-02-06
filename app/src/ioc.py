@@ -27,6 +27,7 @@ class OrganizationInteractorsContainer(DeclarativeContainer):
     exists = providers.Factory(orgs_interactors.CheckOrganizationExistsInteractor)
     get_by_name = providers.Factory(orgs_interactors.GetOrganizationByNameInteractor)
     get_in_radius = providers.Factory(orgs_interactors.GetOrganizationsInRadiusInteractor)
+    get_in_square = providers.Factory(orgs_interactors.GetOrganizationsInSquareInteractor)
     get_by_id = providers.Factory(orgs_interactors.GetOrganizationInteractor)
 
 
